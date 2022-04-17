@@ -1,0 +1,6 @@
+- Pensar só na interseção dos círculos
+
+- Ter grupos que bloqueiam horizontalmente ou verticalmente a sala
+
+- Se tiver 2 que se interceptam verticalmente, F
+- Ou 2 que se interctam horizontalmente
