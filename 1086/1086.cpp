@@ -12,15 +12,23 @@ int try_fit2(int goal_size, int total_height, int L, vector<int>& sorted_planks)
     int used_planks = 0;
     int filled_lines = 0;
     int lines = round(( (float) total_height) / L);
+
+    float difference = ((((float) total_height) / L) - (total_height / L));
+    // cout << "Diff=" << difference << endl;
+    if (difference != 0){
+        return -1;
+    }
+
+
     // cout << "Lines = " << lines << "; Largura = " << L << "; Goal = " << goal_size << endl;
 
     int start = 0;
     int end = sorted_planks.size() - 1;
 
     while(1){
-        // cout << "start=" << start << ", end=" << end << endl;
-        if (filled_lines == lines) return used_planks;
+        // cout << "start=" << start << ", end=" << end << ", filled=" << filled_lines << ", lines=" << lines << endl;
         if (start >= end) return -1; // Ran out of planks
+        if (filled_lines == lines) return used_planks;
 
 
         if (sorted_planks[end]*100 > goal_size){
