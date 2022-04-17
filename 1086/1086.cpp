@@ -13,8 +13,8 @@ int try_fit2(int goal_size, int total_height, int L, vector<int>& sorted_planks)
     int filled_lines = 0;
     int lines = round(( (float) total_height) / L);
 
-    float difference = ((((float) total_height) / L) - (total_height / L));
-    // cout << "Diff=" << difference << endl;
+    float difference = ((((float) total_height) / (float) L) - (total_height / L));
+    // cout << "Diff=" << difference << ", mod=" << total_height%L << endl;
     if (difference != 0){
         return -1;
     }
@@ -25,17 +25,44 @@ int try_fit2(int goal_size, int total_height, int L, vector<int>& sorted_planks)
     int start = 0;
     int end = sorted_planks.size() - 1;
 
+    if (sorted_planks.size() == 1){
+        // cout << "\tPlank=" << sorted_planks[0] << endl;
+        if (goal_size == sorted_planks[0]*100 && lines == 1){
+            return 1;
+        }else{
+            return -1;
+        }
+    }
+    
+
     while(1){
         // cout << "start=" << start << ", end=" << end << ", filled=" << filled_lines << ", lines=" << lines << endl;
-        if (start >= end) return -1; // Ran out of planks
+        if (start > end && (abs(start-end) > 1)) return -1; // Ran out of planks
+        else if (start == end && filled_lines < lines){
+            // Try one last time with last plank
+            if(sorted_planks[end]*100 == goal_size && (filled_lines - lines == -1)){
+                // Exact size
+                // cout << "\t SPECIAL Exact" << endl;
+                used_planks++;
+                filled_lines++;
+                end--;
+                return used_planks;
+            }else{
+                return -1;
+            }
+
+
+        }
         if (filled_lines == lines) return used_planks;
 
 
         if (sorted_planks[end]*100 > goal_size){
+            // cout << "\t Too Big" << endl;
             // Too big
             end--;
         }else if(sorted_planks[end]*100 == goal_size){
             // Exact size
+            // cout << "\t Exact" << endl;
             used_planks++;
             filled_lines++;
             end--;
@@ -43,19 +70,27 @@ int try_fit2(int goal_size, int total_height, int L, vector<int>& sorted_planks)
             // Too small, try to fit two
             if (start != end){
                 while(1){
-                    if(sorted_planks[start]*100 + sorted_planks[end]*100 == goal_size){
+                    bool filled = false;
+                    if((sorted_planks[start]*100 + sorted_planks[end]*100 == goal_size)){
                         // Fit with two exact
+                        // cout << "\tTwo exact" << endl;
                         start++;
                         used_planks++;
                         used_planks++;
                         filled_lines++;
+                        filled = true;
                         break;
                     }
                     if (sorted_planks[start]*100 + sorted_planks[end]*100 > goal_size){
+                        // cout << "\tSmall too big" << endl;
                         // Too big
                         break;
                     }
-                    start++;
+                    if (!filled){
+                        // cout << "\t Change in start" << endl;
+                        start++;
+
+                    }
                 }
                 end--;
             }
