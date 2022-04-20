@@ -52,41 +52,83 @@ void print_vector(vector<int> vec){
 
 
 void processa_ciclo(int i, vector<int> curr_stack, set<pair<int,int>>& ciclos){
-    vector<int> curr_cycle;
+    // vector<int> curr_cycle;
     // print_vector(curr_stack);
 
     // Acha os elementos do ciclo, a partir de 'i'
-    int k=curr_stack.size() - 1;
-    while(curr_stack[k] != i){
-        curr_cycle.push_back(curr_stack[k]);
-        k--;
-    }
-    curr_cycle.push_back(i);
-    reverse(curr_cycle.begin(),curr_cycle.end());    
+    // int k=curr_stack.size() - 1;
+    // while(curr_stack[k] != i){
+    //     curr_cycle.push_back(curr_stack[k]);
+    //     k--;
+    // }
+    // curr_cycle.push_back(i);
+    // reverse(curr_cycle.begin(),curr_cycle.end());    
 
-    // Acha o custo do ciclo
     int total = 0;
-    int last_vertex = i;
-    for(int k=1; k<curr_cycle.size(); k++){
+    int k=curr_stack.size() - 1;
+    int last_vertex;
+    int last2_vertex;
+    // cout << "Edge: " << last_vertex << "->" << last2_vertex << ", cost=" << total << endl;
+    last_vertex = curr_stack[k];
+    last2_vertex = curr_stack[k-1];
+    while(k > 0 && last_vertex != i){
         int cost = -1;
         for(int j=0; j<graph[last_vertex].size(); j++){
-            if (graph[last_vertex][j].destination == curr_cycle[k]){
+            if (graph[last_vertex][j].destination == last2_vertex){
                 cost = graph[last_vertex][j].cost;
                 // cout << "Found cost: " << cost <<  endl;
                 break;
             }
         }
         total += cost;
-        last_vertex = curr_cycle[k];
+        // cout << "Edge: " << last_vertex << "->" << last2_vertex << ", cost=" << total << endl;
+
+        // curr_cycle.push_back(curr_stack[k]);
+        k--;
+        last_vertex = curr_stack[k];
+        last2_vertex = curr_stack[k-1];
+        // last_vertex = last2_vertex;
+        // last2_vertex = curr_stack[k];
     }
+    k=curr_stack.size() - 1;
     int cost = -1;
     for(int j=0; j<graph[last_vertex].size(); j++){
-        if (graph[last_vertex][j].destination == i){
+        if (graph[last_vertex][j].destination == curr_stack[k]){
             cost = graph[last_vertex][j].cost;
             break;
         }
     }
     total += cost;
+    // cout << "Edge: " << last2_vertex << "->" << curr_stack[k] << ", cost=" << total << endl;
+
+
+    // curr_cycle.push_back(i);
+
+
+
+    // Acha o custo do ciclo
+    // int total = 0;
+    // int last_vertex = i;
+    // for(int k=1; k<curr_cycle.size(); k++){
+    //     int cost = -1;
+    //     for(int j=0; j<graph[last_vertex].size(); j++){
+    //         if (graph[last_vertex][j].destination == curr_cycle[k]){
+    //             cost = graph[last_vertex][j].cost;
+    //             // cout << "Found cost: " << cost <<  endl;
+    //             break;
+    //         }
+    //     }
+    //     total += cost;
+    //     last_vertex = curr_cycle[k];
+    // }
+    // int cost = -1;
+    // for(int j=0; j<graph[last_vertex].size(); j++){
+    //     if (graph[last_vertex][j].destination == i){
+    //         cost = graph[last_vertex][j].cost;
+    //         break;
+    //     }
+    // }
+    // total += cost;
 
     ciclos.insert({total,i});
 }
@@ -186,6 +228,16 @@ int main(){
             int idx_start; cin >> idx_start; idx_start--;
             int size; cin >> size;
 
+            // Dijkstra: mínimo para cada outro vértice 
+            memset(custos_minimos, INF, MAXV*sizeof(int));
+            memset(explorados, 0, MAXV*sizeof(int));
+            custos_minimos[idx_start] = 0;
+            dijkstra(idx_start);
+            // for(int i=0; i<V; i++){
+            //     cout << custos_minimos[i] << ",";
+            // }
+            // cout << endl;
+
             // DFS: achar os ciclos
             memset(explorados, 0, MAXV*sizeof(int));
             vector<int> visiting;
@@ -197,15 +249,7 @@ int main(){
             //     // print_vector(p.second.second);
             // }
 
-            // Dijkstra: mínimo para cada outro vértice 
-            memset(custos_minimos, INF, MAXV*sizeof(int));
-            memset(explorados, 0, MAXV*sizeof(int));
-            custos_minimos[idx_start] = 0;
-            dijkstra(idx_start);
-            // for(int i=0; i<V; i++){
-            //     cout << custos_minimos[i] << ",";
-            // }
-            // cout << endl;
+            
 
             // Achar os ciclos que cabem
             int min_to_turn = INF;
