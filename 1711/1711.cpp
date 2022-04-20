@@ -17,11 +17,19 @@
 
 #define ii pair<int,int>
 
-int matrix[MAXV][MAXV];
+// int matrix[MAXV][MAXV];
 int explorados[MAXV];
 int custos_minimos[MAXV];
 
 using namespace std;
+
+typedef struct Node{
+    int destination;
+    int cost;
+} Node;
+
+vector<vector<Node>> graph;
+
 
 void print_stack(stack<int> mys){
     cout << "[";
@@ -60,10 +68,25 @@ void processa_ciclo(int i, vector<int> curr_stack, set<pair<int,int>>& ciclos){
     int total = 0;
     int last_vertex = i;
     for(int k=1; k<curr_cycle.size(); k++){
-        total += matrix[last_vertex][curr_cycle[k]];
+        int cost = -1;
+        for(int j=0; j<graph[last_vertex].size(); j++){
+            if (graph[last_vertex][j].destination == curr_cycle[k]){
+                cost = graph[last_vertex][j].cost;
+                // cout << "Found cost: " << cost <<  endl;
+                break;
+            }
+        }
+        total += cost;
         last_vertex = curr_cycle[k];
     }
-    total += matrix[last_vertex][i];
+    int cost = -1;
+    for(int j=0; j<graph[last_vertex].size(); j++){
+        if (graph[last_vertex][j].destination == i){
+            cost = graph[last_vertex][j].cost;
+            break;
+        }
+    }
+    total += cost;
 
     ciclos.insert({total,i});
 }
@@ -74,16 +97,12 @@ void dfs(int i, int parent, vector<int> path_now, set<pair<int,int>>& ciclos){
         path_now.push_back(i);
 
         // cout << "\tExplorando " << i << ", pai=" << parent <<  endl;
-        for(int j=0; j<MAXV; j++){
-            if (matrix[i][j] < INF && j != parent){
-                // path_now.push_back(j);
-                // cout << "\t\t";
-                // print_vector(path_now);
-                dfs(j, i, path_now, ciclos);
-                // curr_stack.pop();
-
+        for(int j=0; j<graph[i].size(); j++){
+            if(graph[i][j].destination != parent){
+                dfs(graph[i][j].destination, i, path_now, ciclos);
             }
         }
+
     }else if (explorados[i] == 1){
         // cout << "\tCiclo! " << i << endl;
 
@@ -114,13 +133,14 @@ void dijkstra(int root_idx){
         explorados[idx] = 1;
 
         // Explorar os vizinhos
-        for(int j=0; j<MAXV; j++){
-            int custo_extra = matrix[idx][j];
-            if (custo + custo_extra < custos_minimos[j] && idx != j){
+        for(int j=0; j<graph[idx].size(); j++){
+            int custo_extra = graph[idx][j].cost;
+            if (custo + custo_extra < custos_minimos[graph[idx][j].destination] 
+                && idx != graph[idx][j].destination){
                 // Achei um caminho melhor
                 int novo_custo = custo + custo_extra;
-                custos_minimos[j] = novo_custo;
-                ii myp(novo_custo, j);
+                custos_minimos[graph[idx][j].destination] = novo_custo;
+                ii myp(novo_custo, graph[idx][j].destination);
                 p_queue.push(myp);
                 // cout << "\tMelhor: " << j << ", custo=" << novo_custo << endl;
 
@@ -137,19 +157,27 @@ int main(){
     int V;
     while(cin >> V){
         // Inicialização
-        memset(matrix, 0x3f, MAXV*MAXV*sizeof(int));
+        // memset(matrix, 0x3f, MAXV*MAXV*sizeof(int));
         memset(explorados, 0, MAXV*sizeof(int));
         memset(custos_minimos, INF, MAXV*sizeof(int));
         
+        for(int i=0; i<V; i++){
+            vector<Node> myvec;
+            graph.push_back(myvec);
+        }
+
         // Entradas e montagem do grafo
         int E; cin >> E;
         for(int i=0; i<E; i++){
-            int u; cin >> u;
-            int v; cin >> v;
+            int u; cin >> u; u--;
+            int v; cin >> v; v--;
             int c; cin >> c;
 
-            matrix[u-1][v-1] = c;
-            matrix[v-1][u-1] = c;
+            Node n1; n1.destination=v; n1.cost=c;
+            Node n2; n2.destination=u; n2.cost=c;
+
+            graph[u].push_back(n1);
+            graph[v].push_back(n2);
         }
 
         // Processamento das queries
@@ -165,8 +193,8 @@ int main(){
             dfs(idx_start, -1, visiting, ciclos);
 
             // for(auto p : ciclos){
-            //     cout << p.second.first << "(" << p.first << ") ->";
-            //     print_vector(p.second.second);
+            //     cout << p.second << "(" << p.first << ") ->";
+            //     // print_vector(p.second.second);
             // }
 
             // Dijkstra: mínimo para cada outro vértice 
