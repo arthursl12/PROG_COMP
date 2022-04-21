@@ -1,0 +1,8 @@
+#!/bin/bash
+
+g++ *.cpp
+rm -rf myout*
+for i in {1..32}; do
+    ./a.out < data/D_$i.in > myout_D_$i
+    bash cpp myout_D_$i data/D_$i.sol
+done

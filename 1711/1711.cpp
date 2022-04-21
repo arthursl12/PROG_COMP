@@ -19,6 +19,7 @@
 
 // int matrix[MAXV][MAXV];
 int explorados[MAXV];
+int parent_table[MAXV];
 int custos_minimos[MAXV];
 
 using namespace std;
@@ -51,105 +52,58 @@ void print_vector(vector<int> vec){
 }
 
 
-void processa_ciclo(int i, vector<int> curr_stack, set<pair<int,int>>& ciclos){
+void processa_ciclo(int i, int custo_ate_aqui, int parent_cycle, set<pair<int,int>>& ciclos){
     // vector<int> curr_cycle;
     // print_vector(curr_stack);
+    int idx = parent_cycle;
+    int min_cost = INF;
+    int min_idx = -1;
+    while(idx != parent_table[i]){
+        // cout << "\tCusto até " << idx+1 << "= " << custos_minimos[idx] << ", min=" << min_cost << ", fechador=" << i+1 << endl;
+        if(custos_minimos[idx] < min_cost){
+            min_cost = custos_minimos[idx];
+            min_idx = idx;
+        }
+        idx = parent_table[idx];
+    }
+    // cout << "\tmin=" << min_cost << ", min_idx=" << min_idx+1 << endl;
 
+    // cout << "\tCusto até " << idx+1 << "= " << custos_minimos[idx] << ", min=" << min_cost << ", fechador=" << i+1 << endl;
+    // if(custos_minimos[idx] < min_cost){
+    //     min_cost = custos_minimos[idx];
+    //     min_idx = idx;
+    // }
     // Acha os elementos do ciclo, a partir de 'i'
     // int k=curr_stack.size() - 1;
     // while(curr_stack[k] != i){
-    //     curr_cycle.push_back(curr_stack[k]);
+    //     // curr_cycle.push_back(curr_stack[k]);
     //     k--;
     // }
     // curr_cycle.push_back(i);
     // reverse(curr_cycle.begin(),curr_cycle.end());    
 
-    int total = 0;
-    int k=curr_stack.size() - 1;
-    int last_vertex;
-    int last2_vertex;
-    // cout << "Edge: " << last_vertex << "->" << last2_vertex << ", cost=" << total << endl;
-    last_vertex = curr_stack[k];
-    last2_vertex = curr_stack[k-1];
-    while(k > 0 && last_vertex != i){
-        int cost = -1;
-        for(int j=0; j<graph[last_vertex].size(); j++){
-            if (graph[last_vertex][j].destination == last2_vertex){
-                cost = graph[last_vertex][j].cost;
-                // cout << "Found cost: " << cost <<  endl;
-                break;
-            }
-        }
-        total += cost;
-        // cout << "Edge: " << last_vertex << "->" << last2_vertex << ", cost=" << total << endl;
-
-        // curr_cycle.push_back(curr_stack[k]);
-        k--;
-        last_vertex = curr_stack[k];
-        last2_vertex = curr_stack[k-1];
-        // last_vertex = last2_vertex;
-        // last2_vertex = curr_stack[k];
-    }
-    k=curr_stack.size() - 1;
-    int cost = -1;
-    for(int j=0; j<graph[last_vertex].size(); j++){
-        if (graph[last_vertex][j].destination == curr_stack[k]){
-            cost = graph[last_vertex][j].cost;
-            break;
-        }
-    }
-    total += cost;
-    // cout << "Edge: " << last2_vertex << "->" << curr_stack[k] << ", cost=" << total << endl;
-
-
-    // curr_cycle.push_back(i);
-
-
-
-    // Acha o custo do ciclo
-    // int total = 0;
-    // int last_vertex = i;
-    // for(int k=1; k<curr_cycle.size(); k++){
-    //     int cost = -1;
-    //     for(int j=0; j<graph[last_vertex].size(); j++){
-    //         if (graph[last_vertex][j].destination == curr_cycle[k]){
-    //             cost = graph[last_vertex][j].cost;
-    //             // cout << "Found cost: " << cost <<  endl;
-    //             break;
-    //         }
-    //     }
-    //     total += cost;
-    //     last_vertex = curr_cycle[k];
-    // }
-    // int cost = -1;
-    // for(int j=0; j<graph[last_vertex].size(); j++){
-    //     if (graph[last_vertex][j].destination == i){
-    //         cost = graph[last_vertex][j].cost;
-    //         break;
-    //     }
-    // }
-    // total += cost;
-
-    ciclos.insert({total,i});
+    int custo_ciclo = custo_ate_aqui - custos_minimos[i];
+    ciclos.insert({custo_ciclo,min_idx});
 }
 
-void dfs(int i, int parent, vector<int> path_now, set<pair<int,int>>& ciclos){
+void dfs(int i, int parent, int custo_ate_aqui, set<pair<int,int>>& ciclos){
     if(explorados[i] == 0){
         explorados[i] = 1;
-        path_now.push_back(i);
+        // path_now.push_back(i);
+        parent_table[i] = parent;
 
-        // cout << "\tExplorando " << i << ", pai=" << parent <<  endl;
+        // cout << "\tExplorando " << i << ", pai=" << parent << ", ate_aqui=" << custo_ate_aqui <<  endl;
         for(int j=0; j<graph[i].size(); j++){
             if(graph[i][j].destination != parent){
-                dfs(graph[i][j].destination, i, path_now, ciclos);
+                dfs(graph[i][j].destination, i, custo_ate_aqui+graph[i][j].cost, ciclos);
             }
         }
 
     }else if (explorados[i] == 1){
-        // cout << "\tCiclo! " << i << endl;
+        // cout << "\tCiclo! " << i << ", ate_aqui=" << custo_ate_aqui << endl;
 
         // Detectamos um ciclo
-        processa_ciclo(i, path_now, ciclos);
+        processa_ciclo(i, custo_ate_aqui, parent, ciclos);
     }
     explorados[i] = 2;
 }
@@ -200,8 +154,11 @@ int main(){
     while(cin >> V){
         // Inicialização
         // memset(matrix, 0x3f, MAXV*MAXV*sizeof(int));
+        graph.clear();
         memset(explorados, 0, MAXV*sizeof(int));
         memset(custos_minimos, INF, MAXV*sizeof(int));
+        memset(parent_table, -1, MAXV*sizeof(int));
+
         
         for(int i=0; i<V; i++){
             vector<Node> myvec;
@@ -231,6 +188,8 @@ int main(){
             // Dijkstra: mínimo para cada outro vértice 
             memset(custos_minimos, INF, MAXV*sizeof(int));
             memset(explorados, 0, MAXV*sizeof(int));
+            memset(parent_table, -1, MAXV*sizeof(int));
+
             custos_minimos[idx_start] = 0;
             dijkstra(idx_start);
             // for(int i=0; i<V; i++){
@@ -242,10 +201,11 @@ int main(){
             memset(explorados, 0, MAXV*sizeof(int));
             vector<int> visiting;
             set<pair<int,int>> ciclos;
-            dfs(idx_start, -1, visiting, ciclos);
+            parent_table[idx_start] = INF;
+            dfs(idx_start, -1, 0, ciclos);
 
             // for(auto p : ciclos){
-            //     cout << p.second << "(" << p.first << ") ->";
+            //     cout << p.second << "(" << p.first << ")" << endl;
             //     // print_vector(p.second.second);
             // }
 
