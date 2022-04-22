@@ -156,7 +156,7 @@ int main(){
         // memset(matrix, 0x3f, MAXV*MAXV*sizeof(int));
         graph.clear();
         memset(explorados, 0, MAXV*sizeof(int));
-        memset(custos_minimos, INF, MAXV*sizeof(int));
+        memset(custos_minimos, 0x3f, MAXV*sizeof(int));
         memset(parent_table, -1, MAXV*sizeof(int));
 
         
@@ -186,7 +186,7 @@ int main(){
             int size; cin >> size;
 
             // Dijkstra: mínimo para cada outro vértice 
-            memset(custos_minimos, INF, MAXV*sizeof(int));
+            memset(custos_minimos, 0x3f, MAXV*sizeof(int));
             memset(explorados, 0, MAXV*sizeof(int));
             memset(parent_table, -1, MAXV*sizeof(int));
 
