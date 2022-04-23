@@ -1,0 +1,8 @@
+#!/bin/bash
+
+g++ *.cpp
+rm -rf myout*
+for i in {1..40}; do
+    ./a.out < input/A_$i > myout_A_$i
+    bash cpp myout_A_$i output/A_$i
+done
