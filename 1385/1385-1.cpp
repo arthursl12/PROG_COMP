@@ -44,20 +44,74 @@ int size_sum(vector<int> v){
     return total;
 }
 
+bool valid_sum(vector<int> v){
+    int total = 0;
+    for(int i=0; i<v.size()-1; i++){
+        total += v[i];
+    }
+    return total == v[v.size()-1];
+}
+
+// void break_string(string s, vector<int> break_sizes, vector<int>& res){
+//     int last = 0;
+//     for(int i=0; i<break_sizes.size(); i++){
+//         int target_size = break_sizes[i];
+//         string new_s = s.substr(last, target_size);
+//         last += target_size;
+
+//         int myval = stoi(new_s);
+//         res.push_back(myval);
+//     }
+// }
+
+bool break_valid_sum(vector<int> break_sizes, string s, vector<int>& result){
+    int total_sum = 0;
+    int last = 0;
+    // print_vector(break_sizes);
+    for(int i=0; i<break_sizes.size(); i++){
+        int target_size = break_sizes[i];
+        string new_s = s.substr(last, target_size);
+        last += target_size;
+
+        int myval = stoi(new_s);
+        if (i != break_sizes.size()-1){
+            total_sum += myval;
+        }else{
+            if (total_sum != myval){
+                // cout << "Here3" << endl;
+                return false;
+            }
+        }
+        result.push_back(myval);
+    }
+
+    return true;
+}
+
 void findAll(const vector<vector<int> > &allVecs, size_t vecIndex, 
-             vector<int> vecSoFar, vector<vector<int>>& possibilities, int target){
+             vector<int> vecSoFar, 
+             vector<vector<int>>& possibilities, int target, string& s){
     if (vecIndex >= allVecs.size()){
         // cout << strSoFar << endl;
         // print_vector(vecSoFar);
         if (size_sum(vecSoFar) == target){
-            possibilities.push_back(vecSoFar);
+            // Break sizes are OK
+            vector<int> result;
+            bool curr_valid_sum = break_valid_sum(vecSoFar, s, result);
+            if (curr_valid_sum){
+                // Internal sum is valid
+                // print_vector(vecSoFar);
+
+                possibilities.push_back(result);
+
+            }
         }
-        return; 
+        return;
     }
     for (size_t i=0; i<allVecs[vecIndex].size(); i++){
         vector<int> nextVec = vecSoFar;
         nextVec.push_back(allVecs[vecIndex][i]);
-        findAll(allVecs, vecIndex+1, nextVec, possibilities, target);
+        findAll(allVecs, vecIndex+1, nextVec, possibilities, target, s);
 
     }
 }
@@ -98,38 +152,21 @@ void read_clients(vector<string>& names, vector<string>& numbers){
     numbers.push_back(number_str);
 }
 
-void break_string(string s, vector<int> break_sizes, vector<int>& res){
-    int last = 0;
-    for(int i=0; i<break_sizes.size(); i++){
-        int target_size = break_sizes[i];
-        string new_s = s.substr(last, target_size);
-        last += target_size;
 
-        int myval = stoi(new_s);
-        res.push_back(myval);
-    }
-}
 
-bool valid_sum(vector<int> v){
-    int total = 0;
-    for(int i=0; i<v.size()-1; i++){
-        total += v[i];
-    }
-    return total == v[v.size()-1];
-}
 
-void filter_horizontal_sum(string s, vector<vector<int>> all_permutations, 
-                           vector<vector<int>>& valids_sum)
-{
-    valids_sum.clear();
-    for(auto it=all_permutations.begin(); it!=all_permutations.end(); it++){
-        vector<int> result;
-        break_string(s, *it, result);
-        if (valid_sum(result)){
-            valids_sum.push_back(result);
-        }
-    }
-}
+// void filter_horizontal_sum(string s, vector<vector<int>> all_permutations, 
+//                            vector<vector<int>>& valids_sum)
+// {
+//     valids_sum.clear();
+//     for(auto it=all_permutations.begin(); it!=all_permutations.end(); it++){
+//         vector<int> result;
+//         break_string(s, *it, result);
+//         if (valid_sum(result)){
+//             valids_sum.push_back(result);
+//         }
+//     }
+// }
 
 void process_horizontal(string s, int target_size,
                         vector<vector<int>>& filtered_valids_sum){
@@ -143,10 +180,10 @@ void process_horizontal(string s, int target_size,
     for(int i=0; i<target_size; i++){
         allVectors.push_back(number_sizes);
     }
-    vector<int> temp;
-    vector<vector<int>> possibilities;
-    findAll(allVectors, 0, temp, possibilities, s.size());
-    // for(auto v : possibilities){
+    vector<int> temp1;
+    // vector<vector<int>> filtered_valids_sum;
+    findAll(allVectors, 0, temp1, filtered_valids_sum, s.size(), s);
+    // for(auto v : filtered_valids_sum){
     //     print_vector(v);
     // }
     // combinationalSum(number_sizes, target, valids, current_stack, 0);
@@ -176,7 +213,7 @@ void process_horizontal(string s, int target_size,
     // break_string(s, *(all_permutations.begin()), result);
     // print_vector(result);
     // vector<vector<int>> filtered_valids_sum;
-    filter_horizontal_sum(s, possibilities, filtered_valids_sum);
+    // filter_horizontal_sum(s, possibilities, filtered_valids_sum);
     // for(int i=0; i<filtered_valids_sum.size(); i++){
     //     print_vector(filtered_valids_sum[i]);
     // }
