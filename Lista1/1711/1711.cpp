@@ -32,7 +32,7 @@ typedef struct Node{
 vector<vector<Node>> graph;
 
 
-void print_stack(stack<int> mys){
+void print_stack(stack<int>& mys){
     cout << "[";
     int top = mys.top();
     mys.pop();
@@ -44,7 +44,7 @@ void print_stack(stack<int> mys){
     cout << "]" << endl;
 }
 
-void print_vector(vector<int> vec){
+void print_vector(vector<int>& vec){
     for(int i : vec){
         cout << i << ", ";
     }
