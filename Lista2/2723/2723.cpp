@@ -28,6 +28,7 @@ the two sides index wa and wb
 int knapsacks(int idx, int wa, int wb){
     if (abs(wa - wb) > MAX_DIFF){
         // Allocation not possible
+        // cout << "Not possible: " << idx << "," << wa << "," << wb << endl;
         return 0;
     }
 
@@ -44,16 +45,19 @@ int knapsacks(int idx, int wa, int wb){
         wb = temp;
     }
 
-    if (idx >= N){
-        // Reached end of present list
-        M[idx][wa][wb] = 1;
-    }else if (M[idx][wa][wb] != -1){
+    if (M[idx][wa][wb] != -1){
         // Already seen case
         // nothing to compute
+    }else if (idx >= N+1){
+        // Reached end of present list
+        // cout << "End: " << idx << "," << wa << "," << wb << endl;
+        M[idx][wa][wb] = 1;
     }else{
         // Try fitting on left or on right
         M[idx][wa][wb] = (knapsacks(idx+1, wa+weight[idx], wb) 
                          || knapsacks(idx+1, wa, wb+weight[idx]));
+        // cout << "OK: " << idx << "," << wa << "," << wb << endl;
+        
     }
     return M[idx][wa][wb];
 }
