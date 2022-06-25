@@ -25,8 +25,7 @@ using namespace std;
 vector<int> intervals_music, intervals_snip;
 map<string, string> correlations;
 map<string, ii>    value;
-map<string, int>    scaled;
-
+int pi[MAX];
 
 void montar_correlations(){
     correlations["C#"] = "C#";
@@ -53,18 +52,6 @@ void montar_correlations(){
     correlations["A"] = "A";
     correlations["B"] = "B";
 
-    // value["C"]  = 1;
-    // value["C#"] = 2;
-    // value["D"]  = 3;
-    // value["D#"] = 4;
-    // value["E"]  = 5;
-    // value["F"]  = 6;
-    // value["F#"] = 7;
-    // value["G"]  = 8;
-    // value["G#"] = 9;
-    // value["A"]  = 10;
-    // value["A#"] = 11;
-    // value["B"]  = 12;
     value["C"]  = {1,13};
     value["C#"] = {2,14};
     value["D"]  = {3,15};
@@ -94,34 +81,55 @@ int distancia(string& n1, string& n2){
     }else{
         return value[n2].second-value[n1].first;
     }
-
-
-
-    // int m1 = abs(value[n2] - value[n1]);
-    // int m2 = abs(value[n1] - value[n2]);
-    // if (m1 > m2){
-    //     return value[n1] - value[n2];
-    // }else{
-    //     return value[n2] - value[n1];
-    // }
-    return scaled[n2]-scaled[n1];
 }
 
-void montar_scaled_value(string& nota0){
-    scaled.clear();
-    vector<string> order = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B","C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
-    int i=0;
-    for(; i<12; i++){
-        if (order[i] == nota0){
-            break;
+void prefix_function(vector<int>& s) {
+    int n = s.size();
+    memset(pi, 0, MAX*sizeof(int));
+
+    pi[0] = -1;
+    int pos = 1;
+    int cnd = 0;
+    while(pos < s.size()){
+        if (s[pos] == s[cnd]){
+            pi[pos] = pi[cnd];
+        }else{
+            pi[pos] = cnd;
+            while(cnd >= 0 && pi[pos] != pi[cnd]){
+                cnd = pi[cnd];
+            }
+        }
+        pos++;
+        cnd++;
+    }
+    pi[pos] = cnd;
+}
+
+int kmp(vector<int>& text, vector<int>& patt){
+    prefix_function(patt);
+
+    int j=0;
+    int k=0;
+    int np=0;
+
+    while(j < text.size()){
+        // cout << j << endl;
+        if(patt[k] == text[j]){
+            j++;
+            k++;
+            if (k == patt.size()){
+                // Found
+                return j-k;
+            }
+        }else{
+            k = pi[k];
+            if (k<0){
+                j++;
+                k++;
+            }
         }
     }
-
-    for(int j=1; j<=12; j++){
-        scaled[order[i]] = j;
-        cout << "scaled[" << order[i] << "]=" << j << endl;
-        i++;
-    }
+    return -1;
 }
 
 int main() {
@@ -174,21 +182,22 @@ int main() {
         // cout << endl;
 
         // Try to find
-        bool copy = false;
-        for(int i=0; i<n_music-1; i++){
-            if(intervals_music[i] == intervals_snip[0] && ((n_music-1-i)>=(n_snip-1))){
-                int j=i;
-                int k=0;
-                while(j<n_music-1 && k<n_snip-1 && intervals_music[j] == intervals_snip[k]){
-                    j++; k++;
-                    if (k >= (n_snip-1)){
-                        // cout << "HERE: i=" << i << endl; 
-                        copy = true;
-                        break;
-                    }
-                }
-            }
-        }
+        bool copy = (kmp(intervals_music, intervals_snip) != -1);
+        // bool copy = false;
+        // for(int i=0; i<n_music-1; i++){
+        //     if(intervals_music[i] == intervals_snip[0] && ((n_music-1-i)>=(n_snip-1))){
+        //         int j=i;
+        //         int k=0;
+        //         while(j<n_music-1 && k<n_snip-1 && intervals_music[j] == intervals_snip[k]){
+        //             j++; k++;
+        //             if (k >= (n_snip-1)){
+        //                 // cout << "HERE: i=" << i << endl; 
+        //                 copy = true;
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
 
         if (copy){
             cout << "S" << endl;
