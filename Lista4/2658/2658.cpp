@@ -12,7 +12,7 @@
 using namespace std;
 
 #define INF 0x3f3f3f3f
-#define MAX 112345
+#define MAX 100010
 #define ii pair<int,int>
 #define ll long long
 
@@ -55,9 +55,10 @@ void propaga(int noh, int ini, int fim){
         lazy[2*noh+1] += lazy[noh];
     }
     lazy[noh] = 0;
+    return;
 }
 
-node add(node n1, node n2){
+node add(node& n1, node& n2){
     node res;
     for(int i=0; i<9;i++){
         res.frequency[i] = n1.frequency[i] + n2.frequency[i];
@@ -74,8 +75,9 @@ node consulta(int noh, int ini, int fim, int l, int r){
         return NULL_NODE;
     }
     int meio = (ini+fim)/2;
-    return add(consulta(2*noh, ini, meio, l, r), 
-               consulta(2*noh+1, meio+1, fim, l, r));
+    node n1 = consulta(2*noh, ini, meio, l, r);
+    node n2 = consulta(2*noh+1, meio+1, fim, l, r);
+    return add(n1,n2);
 }
 
 void update(int noh, int ini, int fim, int l, int r, int x){
@@ -95,7 +97,7 @@ void update(int noh, int ini, int fim, int l, int r, int x){
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
+    ios_base::sync_with_stdio(false); cin.tie(NULL);
 
     // Definining NULL_NODE
     for(int i=0; i<9; i++){
